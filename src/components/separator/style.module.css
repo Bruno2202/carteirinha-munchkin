@@ -1,0 +1,7 @@
+.separator {
+    width: 100%;
+    margin: 12px 0px;
+    border-width: 1px;
+    border-color: #44445b;
+    border-style: solid;
+}

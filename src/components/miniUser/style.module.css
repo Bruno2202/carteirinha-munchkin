@@ -1,0 +1,105 @@
+.miniUser {
+    border-radius: 8px;
+    background-color: white;
+}
+
+.userPic {
+    width: auto;
+    height: 50px;
+    border-radius: 25px;
+}
+
+@media only screen and (max-width: 600px) {
+    .miniUser {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        border-radius: 8px;
+        padding: 8px;
+        background-color: #000000;
+    }
+
+    .place {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        margin-right: 16px;
+        text-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    }
+
+    .userPic {
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+    }
+
+    .nome {
+        margin: 0px 8px;
+        color: #FFFFFF;
+        text-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    }
+
+    .victories {
+        position: absolute;
+        right: 4px;
+        margin: 0px 8px;
+        color: #FFFFFF;
+        text-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    }
+
+    .miniUser_Users {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 8px;
+        gap: 24px;
+        padding: 8px;
+        background-color: #000000;
+    }
+
+    .userCredentials {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 4px;
+    }
+
+    .userPic_Users {
+        height: 68px;
+        width: 68px;
+        border-radius: 40px;
+    }
+
+    .name_Users {
+        color: #FFFFFF;
+        font-size: 1.2rem;
+    }
+
+    .stats {
+        color: #FFFFFF;
+        gap: 12px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .infoTop {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .infoBottom {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .monster {
+        font-style: italic;
+        font-family: 'Windlass';
+        font-weight: 100;
+    }
+}

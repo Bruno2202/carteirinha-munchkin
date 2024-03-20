@@ -1,0 +1,23 @@
+
+
+@media only screen and (max-width: 600px) {
+    .header {
+        padding: 0px 10px;
+        display: flex;
+        align-items: center;
+        width: 100vw;
+        height: 52px;
+        background-color: #282A3A;
+        text-align: center;
+        position: relative;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    }
+
+    .title {
+        right: 0;
+        left: 0;
+        position: absolute;
+        color: #FFFFFF;
+        font-weight: 800;
+    }
+}

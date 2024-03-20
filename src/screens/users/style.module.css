@@ -1,0 +1,16 @@
+@media only screen and (max-width: 600px) {
+    .container {
+        background-color: #282A3A;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .userList {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        background-color: #282A3A;
+        margin: 12px 0px 0px 0px;
+        gap: 24px;
+    }
+}

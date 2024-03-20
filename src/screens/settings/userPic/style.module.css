@@ -1,0 +1,44 @@
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.container {
+    background-color: #282A3A;
+}
+
+.userPics {
+    background-color: #282A3A;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+}
+
+.munchkinPics {
+    margin: 8px;
+    width: 100px;
+    height: 100px;
+    border-radius: 60px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    animation: fadeIn 0.5s ease-out;
+    transition: ease-in-out all 0.2s;
+}
+
+.munchkinPics:hover {
+    width: 112px;
+    height: 112px;
+    border-style: solid;
+    border-color: #C69749;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}

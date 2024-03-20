@@ -1,0 +1,15 @@
+.input {
+    background-color: #735F32;
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    margin: 20px;
+    padding: 16px;
+    outline: none;
+    color: #FFFFFF;
+}
+
+.input::placeholder{
+    color: #282A3A;
+    font-weight: 500;
+}
