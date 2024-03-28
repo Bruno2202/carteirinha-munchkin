@@ -1,0 +1,20 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #282A3A;
+}
+
+.rooms {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px;
+}
+
+.roomName {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0px;
+    width: 100vw;
+    color: #C69749;
+}

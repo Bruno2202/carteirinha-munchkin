@@ -1,0 +1,22 @@
+.miniRoom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    background-color: #44445B;
+    border-radius: 8px;
+}
+
+.roomPic {
+    border-radius: 25px;
+    width: 50px;
+    height: 50px;
+    margin-right: 16px;
+}
+
+.roomName {
+    font-size: 1.2rem;
+    color: #FFFFFF;
+}
