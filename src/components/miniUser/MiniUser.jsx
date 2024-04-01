@@ -4,16 +4,32 @@ import { Link } from 'react-router-dom';
 import styles from "./style.module.css";
 import Info from "../info/Info"
 
-export default function MiniUser({ name, victories, place, placeColor, isLeaderboard, defeats, rating, favoriteCard, userPic }) {
+export default function MiniUser({
+    name,
+    victories,
+    place,
+    placeColor,
+    isLeaderboard,
+    defeats,
+    rating,
+    favoriteCard,
+    userPic,
+    showLeaderPlace,
+    showLeaderVictories
+}) {
     return (
         <>
             {
                 isLeaderboard ? (
                     <div className={styles.miniUser} style={{ backgroundColor: placeColor }} >
-                        <p className={styles.place}>{place}°</p>
+                        {showLeaderPlace &&
+                            <p className={styles.place}>{place}°</p>
+                        }
                         <img className={styles.userPic} src={userPic ? userPic : require("../../assets/img/userPic.png")} />
                         <h3 className={styles.nome}>{name}</h3>
-                        <h4 className={styles.victories}>{victories}</h4>
+                        {showLeaderVictories &&
+                            <h4 className={styles.victories}>{victories}</h4>
+                        }
                     </div >
                 ) : (
                     <div /*to={`/profile/${name}`}*/ className={styles.miniUser_Users} style={{ backgroundColor: placeColor }}>
@@ -27,9 +43,9 @@ export default function MiniUser({ name, victories, place, placeColor, isLeaderb
                                 <Info title={"VITÓRIAS"} value={victories} />
                                 <Info title={"RATING"} value={rating} />
                             </div>
-                            <div className={styles.infoBottom}>
+                            {/* <div className={styles.infoBottom}>
                                 <Info title={"CARTA FAVORITA"} value={favoriteCard} font={"Windlass"} textColor={"#C69749"} />
-                            </div>
+                            </div> */}
                         </div>
                     </div >
                 )

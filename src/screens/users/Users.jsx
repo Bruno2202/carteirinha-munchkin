@@ -3,7 +3,7 @@ import { db } from "../../config/firebaseConfig";
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 import styles from "./style.module.css";
-import BackHeader from '../../components/backHaeder/BackHeader';
+import BackHeader from '../../components/backHeader/BackHeader';
 import MiniUser from '../../components/miniUser/MiniUser';
 
 export default function Users() {
@@ -39,7 +39,7 @@ export default function Users() {
                         userPic={user.picURL}
                         victories={user.vitorias}
                         defeats={user.derrotas}
-                        favoriteCard={user.carta_favorita}
+                        // favoriteCard={user.carta_favorita}
                         rating={`${user.rating}%`}
                     />
                 ))}

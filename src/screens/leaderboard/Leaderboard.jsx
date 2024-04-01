@@ -3,7 +3,7 @@ import { db } from "../../config/firebaseConfig";
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 import styles from "./style.module.css";
-import BackHeader from '../../components/backHaeder/BackHeader';
+import BackHeader from '../../components/backHeader/BackHeader';
 import MiniUser from '../../components/miniUser/MiniUser';
 
 export default function Leaderboard() {
@@ -27,11 +27,11 @@ export default function Leaderboard() {
     }
 
     function color(index) {
-        if (index+1 == 1) {
+        if (index + 1 == 1) {
             return "#FFD700"
-        } else if (index+1 == 2) {
+        } else if (index + 1 == 2) {
             return "#C0C0C0"
-        } else if (index+1 == 3) {
+        } else if (index + 1 == 3) {
             return "#CD7F32"
         } else {
             return "#44445b"
@@ -40,10 +40,21 @@ export default function Leaderboard() {
 
     return (
         <div className={styles.container}>
-            <BackHeader title={"LEADERBOARD"} backgroundColor={"#0D1117"}/>
+            <BackHeader title={"LEADERBOARD"} backgroundColor={"#0D1117"} />
             <div className={styles.leaderboard}>
                 {data.map((user, index) => (
-                    <MiniUser key={user.nome} name={user.nome} userPic={user.picURL} victories={user.vitorias} showPlace={true} place={index+1} placeColor={color(index)} isLeaderboard={true} />
+                    <MiniUser
+                        key={user.nome}
+                        name={user.nome}
+                        userPic={user.picURL}
+                        victories={user.vitorias}
+                        showPlace={true}
+                        place={index + 1}
+                        placeColor={color(index)}
+                        isLeaderboard={true}
+                        showLeaderPlace={true}
+                        showLeaderVictories={true}
+                    />
                 ))}
             </div>
         </div>

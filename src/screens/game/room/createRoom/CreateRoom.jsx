@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 import { db, auth } from "../../../../config/firebaseConfig";
-import { Firestore, addDoc, collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import styles from "./style.module.css";
-import BackHeader from '../../../../components/backHaeder/BackHeader';
+import BackHeader from '../../../../components/backHeader/BackHeader';
 import Button from '../../../../components/button/Button';
+import Input from "../../../../components/input/Input";
 
 export default function CreateRoom() {
     const [myUid, setMyUid] = useState("");
     const [roomName, setRoomName] = useState("");
-    const [waitingMatchIsVisible, setWaitingMatchIsVisible] = useState(false);
     const [userData, setUserData] = useState("");
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         onAuthStateChanged((auth), user => {
@@ -34,6 +37,12 @@ export default function CreateRoom() {
     async function createRoom() {
         if (!roomName) {
             toast.error("A sala não possui nome");
+        } else if (userData.sala !== "") {
+            if (userData.admin_sala) {
+                toast.error("Você já possui uma sala");
+            } else {
+                toast.error("Você já está em uma sala");
+            }
         } else {
             const collectionRef = collection(db, "room");
 
@@ -42,14 +51,21 @@ export default function CreateRoom() {
                 nome: roomName,
                 uid_criador: myUid,
                 dt_criacao: new Date(),
+                dt_inicio: null,
+                dt_fim: null,
                 num_jogadores: 1,
                 roomPic: userData.picURL ? userData.picURL : require('../../../../assets/img/userPic.png')
             }
 
             try {
                 const room = await addDoc(collectionRef, roomData);
+
                 const roomDocRef = doc(db, `room/${room.id}`);
+                const userDocRef = doc(db, `user/${myUid}`);
+
                 await updateDoc(roomDocRef, { roomID: room.id });
+                await updateDoc(userDocRef, { sala: room.id });
+                await updateDoc(userDocRef, { admin_sala: true });
 
                 try {
                     const parentDocRef = doc(db, `room/${room.id}/jogadores`, myUid);
@@ -60,19 +76,20 @@ export default function CreateRoom() {
                         picURL: userData.picURL,
                         nivel: 1,
                         equipamento: 0,
-                        modificador: 0
+                        modificador: 0,
                     }
 
                     await setDoc(parentDocRef, playerData);
-                    
+
                     toast.success("Sala criada com sucesso");
-                    setWaitingMatchIsVisible(!waitingMatchIsVisible);
+
+                    navigate("/room/join");
                 } catch (error) {
                     console.log(`Erro ao criar sala: ${error}`);
                 }
             } catch (error) {
                 toast.error("Não foi possível criar sala");
-                console.log(error);
+                console.log(`Erro ao criar sala: ${error}`);
             }
         }
     }
@@ -80,23 +97,11 @@ export default function CreateRoom() {
     return (
         <div className={styles.container}>
             <BackHeader title={"CRIAR SALA"} backgroundColor={"#0D1117"} />
-            {!waitingMatchIsVisible &&
-                <div className={styles.createRoom}>
-                    <p>Nome da sala: </p>
-                    <input maxLength={16} placeholder='Sala do magos' onChange={(e) => setRoomName(e.target.value)} />
-                    <Button text={"Criar sala"} onClick={() => createRoom()} />
-                </div>
-            }
-            {waitingMatchIsVisible &&
-                <div className={styles.waitingMatch}>
-                    <h1 className={styles.roomName}>{roomName}</h1>
-                    <p>Aguardando jogadores...</p>
-                    <div>
-
-                    </div>
-                </div>
-            }
+            <div className={styles.createRoom}>
+                {/* <p>Nome da sala: </p> */}
+                <Input style={2} maxLength={24} placeholder={`Sala dos magos`} setValue={setRoomName} onChange={(e) => setRoomName(e.target.value)} />
+                <Button text={"Criar sala"} onClick={() => createRoom()} />
+            </div>
         </div>
-
     );
 }

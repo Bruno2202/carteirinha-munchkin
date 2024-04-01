@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../../../config/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import styles from "./style.module.css";
-import BackHeader from '../../../../components/backHaeder/BackHeader';
+import BackHeader from '../../../../components/backHeader/BackHeader';
 import MiniRoom from '../../../../components/miniRoom/MiniRoom';
+import MiniUser from '../../../../components/miniUser/MiniUser';
+import toast from 'react-hot-toast';
+import Button from '../../../../components/button/Button';
 
 export default function JoinRoom() {
     const [data, setData] = useState([]);
@@ -15,6 +18,11 @@ export default function JoinRoom() {
     const [roomId, setRoomId] = useState("");
     const [roomData, setRoomData] = useState(null);
     const [myUid, setMyUid] = useState("");
+    const [players, setPlayers] = useState([]);
+    const [userData, setUserData] = useState(null);
+    const [roomAdmin, setRoomAdmin] = useState(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         onAuthStateChanged((auth), user => {
@@ -25,6 +33,11 @@ export default function JoinRoom() {
     useEffect(() => {
         if (myUid !== "") {
             searchRooms();
+            const userDocRef = async () => {
+                const data = await getDoc(doc(db, `user/${myUid}`));
+                setUserData(data.data());
+            }
+            userDocRef();
         }
     }, [myUid]);
 
@@ -38,24 +51,124 @@ export default function JoinRoom() {
         }
     }, [roomId]);
 
+    useEffect(() => {
+        if (inRoom) {
+            showPlayers();
+
+            const playersCollectionRef = collection(db, `room/${roomId}/jogadores`);
+            const updatePlayersOnRoom = onSnapshot(playersCollectionRef, () => {
+                showPlayers();
+            });
+            return () => {
+                updatePlayersOnRoom();
+            };
+        } else {
+            searchRooms();
+
+            const roomsCollectionRef = collection(db, `room`);
+            const updateRoomsAvailable = onSnapshot(roomsCollectionRef, () => {
+                searchRooms();
+            });
+            return () => {
+                updateRoomsAvailable();
+            };
+        }
+    }, [inRoom]);
+
     async function searchRooms() {
         const querySnapshot = await getDocs(collection(db, "room"));
         const roomData = querySnapshot.docs.map(doc => doc.data());
-        setData(roomData);
+        if (roomData.length < 1) {
+            setData([]);
+        } else {
+            setData(roomData);
+        }
     }
 
-    async function setRoom(id) {
-        const roomDocRef = doc(db, `room/${id}`);
-        const userDocRef = doc(db, `user/${myUid}`);
+    async function setRoom(roomID) {
+        if (userData.admin_sala && roomID == userData.sala) {
+            setRoomAdmin(true);
+        }
+        if (userData.admin_sala && roomID !== userData.sala) {
+            toast.error("Você já possui uma sala");
+        } else {
+            const roomDocRef = doc(db, `room/${roomID}`);
+            const userDocRef = doc(db, `user/${myUid}`);
 
-        const roomQuerySnapshot = await getDoc(roomDocRef);
-        const userQuerySnapshot = await getDoc(userDocRef);
+            const roomQuerySnapshot = await getDoc(roomDocRef);
+            const userDataNow = await getDoc(userDocRef);
 
-        await updateDoc(roomDocRef, { num_jogadores: roomQuerySnapshot.data().num_jogadores + 1 });
-        await updateDoc(userDocRef, { jogando: true });
+            if (userDataNow.data().sala !== roomID) {
+                await updateDoc(roomDocRef, { num_jogadores: roomQuerySnapshot.data().num_jogadores + 1 });
+                await updateDoc(userDocRef, { sala: roomID });
+            }
 
-        setRoomId(id);
-        setInRoom(!inRoom);
+            const playersDocRef = doc(db, `room/${roomID}/jogadores`, myUid);
+            const playerData = {
+                uid: myUid,
+                nome: userData.nome,
+                picURL: userData.picURL,
+                nivel: 1,
+                equipamento: 0,
+                modificador: 0,
+            }
+            await setDoc(playersDocRef, playerData);
+
+            setRoomId(roomID);
+            setInRoom(!inRoom);
+        }
+    }
+
+    async function showPlayers() {
+        const querySnapshot = await getDocs(collection(db, `room/${roomId}/jogadores`));
+        const playerData = querySnapshot.docs.map((doc) => doc.data());
+        setPlayers(playerData);
+    }
+
+    async function deleteRoom(roomID) {
+        try {
+            const roomDocRef = doc(db, `room/${roomID}`);
+            const roomData = await getDoc(roomDocRef)
+
+            const playersQuerySnapshot = await getDocs(collection(db, `room/${roomID}/jogadores`));
+            const players = playersQuerySnapshot.docs.map((doc) => doc.data().uid);
+
+            players.forEach(async (uid) => {
+                if (uid == roomData.data().uid_criador) {
+                    const adminDocRef = doc(db, `user/${uid}`);
+                    await updateDoc(adminDocRef, { admin_sala: false });
+                }
+                const playerDocRef = doc(db, `user/${uid}`);
+                await updateDoc(playerDocRef, { sala: "" });
+                deleteDoc(doc(db, `room/${roomID}/jogadores/${uid}`));
+            })
+
+            await deleteDoc(roomDocRef);
+            toast.success("Sala excluida com sucesso!");
+            navigate("/profile");
+        } catch (error) {
+            toast.error("Erro ao excluir sala");
+            console.log(`Não foi possível excluir sala: ${error}`);
+        }
+    }
+
+    async function exitRoom(roomID) {
+        try {
+            const playerDocRef = doc(db, `user/${myUid}`);
+            const roomDocRef = doc(db, `room/${roomID}`);
+            const roomDocData = await getDoc(roomDocRef);
+
+            await updateDoc(playerDocRef, { sala: "" });
+            await updateDoc(roomDocRef, { num_jogadores: roomDocData.data().num_jogadores - 1 })
+            deleteDoc(doc(db, `room/${roomID}/jogadores/${myUid}`));
+            resetRoomData();
+
+            toast("Você saiu da sala");
+            navigate("/room/join");
+        } catch (error) {
+            toast.error("Não foi possível sair da sala");
+            console.log(`Erro ao sair da sala: ${error}`);
+        }
     }
 
     function resetRoomData() {
@@ -68,23 +181,52 @@ export default function JoinRoom() {
         <div className={styles.container}>
             {!inRoom ? (
                 <>
-                    <BackHeader title={"ENTRAR EM SALA"} backgroundColor={"#0D1117"} />
+                    <BackHeader to={"/room"} title={"ENTRAR EM SALA"} backgroundColor={"#0D1117"} />
                     <div className={styles.rooms}>
-                        {data.map((room) => (
-                            <Link to={`/room/${room.roomID}`} key={room.roomID} onClick={() => setRoom(room.roomID)}>
-                                <MiniRoom
-                                    roomName={room.nome}
-                                    roomPic={room.roomPic}
-                                />
-                            </Link>
+                        {data.length < 1 ? (
+                            <p className={styles.text}>Não há salas disponíveis no momento</p>
+                        ) : (
+                            data.map((room) => (
+                                <Link to={`/room/${room.roomID}`} key={room.roomID} onClick={() => setRoom(room.roomID)}>
+                                    <MiniRoom
+                                        roomName={room.nome}
+                                        roomPic={room.roomPic}
+                                    />
+                                </Link>
+                            )
                         ))}
                     </div>
                 </>
             ) : (
                 <>
-                    <BackHeader backgroundColor={"#0D1117"} to={"/room/join"} title={roomData && roomData.nome} onClick={() => resetRoomData()} />
+                    <BackHeader backgroundColor={"#0D1117"} to={"/room/join"} title={roomData && roomData.nome} onClick={() => resetRoomData()}>
+                        {!roomAdmin && (
+                            <div onClick={() => exitRoom(roomId)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 -960 960 960" width="28" fill='#B2283A'>
+                                    <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" />
+                                </svg>
+                            </div>
+                        )}
+                    </BackHeader>
                     <div className={styles.room}>
-
+                        {roomAdmin && (
+                            <div className={styles.options}>
+                                <Button text={"Excluir sala"} backgroundColor={"#B2283A"} color={"#FFFFFF"} onClick={() => deleteRoom(roomId)} />
+                                <Button text={"Iniciar partida"} backgroundColor={"#55DB5E"} color={"#FFFFFF"} onClick={() => toast.error("Ainda não é possível inciar partida")} />
+                            </div>
+                        )}
+                        <p className={styles.text}>Aguardando jogadores...</p>
+                        {players.map((player) => (
+                            <MiniUser
+                                key={player.uid}
+                                name={player.nome}
+                                userPic={player.picURL}
+                                isLeaderboard={true}
+                                showLeaderPlace={false}
+                                showLeaderVictories={false}
+                                placeColor={"#44445B"}
+                            />
+                        ))}
                     </div>
                 </>
             )}

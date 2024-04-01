@@ -7,7 +7,7 @@ import { addDoc, collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import styles from "./style.module.css";
-import BackHeader from "../../../components/backHaeder/BackHeader";
+import BackHeader from "../../../components/backHeader/BackHeader";
 import Button from '../../../components/button/Button';
 
 export default function CreateRoom() {

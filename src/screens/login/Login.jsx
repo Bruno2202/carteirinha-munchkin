@@ -45,7 +45,7 @@ export default function Home() {
             <div className={styles.cardRight}>
                 <div className={styles.cardLogin}>
                     <h1 className={styles.loginTitle}>
-                        LOGIN
+                        Entrar
                     </h1>
                     <div className={styles.inputs}>
                         <Input placeholder={"Email"} type={"text"} setValue={setEmail} />

@@ -41,7 +41,9 @@ export default function Register() {
                 derrotas: 0,
                 rating: 0,
                 picURL: "",
-                jogando: false
+                jogando: false,
+                sala: "",
+                admin_sala: false
             };
 
             await setDoc(userDocRef, userData);

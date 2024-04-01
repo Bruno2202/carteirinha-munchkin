@@ -7,7 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import styles from "./style.module.css";
-import BackHeader from '../../../components/backHaeder/BackHeader';
+import BackHeader from '../../../components/backHeader/BackHeader';
 
 
 export default function UserPic() {

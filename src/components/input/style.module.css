@@ -1,4 +1,4 @@
-.input {
+.input1 {
     background-color: #735F32;
     border: none;
     border-radius: 8px;
@@ -9,7 +9,27 @@
     color: #FFFFFF;
 }
 
-.input::placeholder{
+.input1::placeholder{
     color: #282A3A;
+    font-weight: 500;
+}
+
+.input2 {
+    border-radius: 0px;
+    width: 60%;
+    margin-bottom: 30px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid #FFFFFF;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.input2::placeholder{
+    text-align: center;
+    color: #FFFFFF;
+    opacity: 0.5;
     font-weight: 500;
 }
