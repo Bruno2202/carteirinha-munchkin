@@ -51,7 +51,7 @@ export default function Leaderboard() {
                         showPlace={true}
                         place={index + 1}
                         placeColor={color(index)}
-                        isLeaderboard={true}
+                        type={1}
                         showLeaderPlace={true}
                         showLeaderVictories={true}
                     />

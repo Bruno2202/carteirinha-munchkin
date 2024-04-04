@@ -12,10 +12,15 @@ import InGame from './screens/game/inGame/InGame';
 import Room from './screens/game/room/Room';
 import CreateRoom from './screens/game/room/createRoom/CreateRoom';
 import JoinRoom from './screens/game/room/joinRoom/JoinRoom';
+import Battle from './screens/game/inGame/battle/Battle';
 
 export default function App() {
 	return (
 		<>
+			<Toaster
+				position="top-center"
+				reverseOrder={false}
+			/>
 			<Router>
 				<Routes>
 					<Route path="/" element={<Login />} />
@@ -29,13 +34,10 @@ export default function App() {
 					<Route path="/room/:roomID" element={<JoinRoom />} />
 					<Route path="/room/create" element={<CreateRoom />} />
 					<Route path="/room/join" element={<JoinRoom />} />
-					<Route path="/game" element={<InGame />} />
+					<Route path="/game/:roomID" element={<InGame />}/>
+					<Route path="/game/:roomID/battle/:playerUid" element={<Battle />} />
 				</Routes>
 			</Router>
-			<Toaster
-				position="top-center"
-				reverseOrder={false}
-			/>
 		</>
 	);
 }

@@ -34,7 +34,8 @@ export default function CreateRoom() {
         }
     }, [myUid]);
 
-    async function createRoom() {
+
+    function validateRoom() {
         if (!roomName) {
             toast.error("A sala não possui nome");
         } else if (userData.sala !== "") {
@@ -44,53 +45,67 @@ export default function CreateRoom() {
                 toast.error("Você já está em uma sala");
             }
         } else {
-            const collectionRef = collection(db, "room");
+            promiseCreateRoom();
+        }
+    }
 
-            const roomData = {
-                roomID: "",
-                nome: roomName,
-                uid_criador: myUid,
-                dt_criacao: new Date(),
-                dt_inicio: null,
-                dt_fim: null,
-                num_jogadores: 1,
-                roomPic: userData.picURL ? userData.picURL : require('../../../../assets/img/userPic.png')
+    function promiseCreateRoom() {
+        toast.promise(
+            createRoom(),
+            {
+                loading: 'Criando sala...',
+                success: <b>Sala criada com sucesso!</b>,
+                error: <b>Não foi possível criar sala</b>,
             }
+        );
+    }
+
+    async function createRoom() {
+        const collectionRef = collection(db, "room");
+
+        const roomData = {
+            roomID: "",
+            nome: roomName,
+            uid_criador: myUid,
+            dt_criacao: new Date(),
+            dt_inicio: null,
+            dt_fim: null,
+            num_jogadores: 1,
+            roomPic: userData.picURL ? userData.picURL : require('../../../../assets/img/userPic.png'),
+            jogando: false
+        }
+
+        try {
+            const room = await addDoc(collectionRef, roomData);
+
+            const roomDocRef = doc(db, `room/${room.id}`);
+            const userDocRef = doc(db, `user/${myUid}`);
+
+            await updateDoc(roomDocRef, { roomID: room.id });
+            await updateDoc(userDocRef, { sala: room.id });
+            await updateDoc(userDocRef, { admin_sala: true });
 
             try {
-                const room = await addDoc(collectionRef, roomData);
+                const parentDocRef = doc(db, `room/${room.id}/jogadores`, myUid);
 
-                const roomDocRef = doc(db, `room/${room.id}`);
-                const userDocRef = doc(db, `user/${myUid}`);
-
-                await updateDoc(roomDocRef, { roomID: room.id });
-                await updateDoc(userDocRef, { sala: room.id });
-                await updateDoc(userDocRef, { admin_sala: true });
-
-                try {
-                    const parentDocRef = doc(db, `room/${room.id}/jogadores`, myUid);
-
-                    const playerData = {
-                        uid: myUid,
-                        nome: userData.nome,
-                        picURL: userData.picURL,
-                        nivel: 1,
-                        equipamento: 0,
-                        modificador: 0,
-                    }
-
-                    await setDoc(parentDocRef, playerData);
-
-                    toast.success("Sala criada com sucesso");
-
-                    navigate("/room/join");
-                } catch (error) {
-                    console.log(`Erro ao criar sala: ${error}`);
+                const playerData = {
+                    uid: myUid,
+                    nome: userData.nome,
+                    picURL: userData.picURL,
+                    nivel: 1,
+                    equipamento: 0,
+                    modificador: 0,
+                    admin_sala: true
                 }
+
+                await setDoc(parentDocRef, playerData);
+
+                navigate("/room/join");
             } catch (error) {
-                toast.error("Não foi possível criar sala");
                 console.log(`Erro ao criar sala: ${error}`);
             }
+        } catch (error) {
+            console.log(`Erro ao criar sala: ${error}`);
         }
     }
 
@@ -98,9 +113,8 @@ export default function CreateRoom() {
         <div className={styles.container}>
             <BackHeader title={"CRIAR SALA"} backgroundColor={"#0D1117"} />
             <div className={styles.createRoom}>
-                {/* <p>Nome da sala: </p> */}
                 <Input style={2} maxLength={24} placeholder={`Sala dos magos`} setValue={setRoomName} onChange={(e) => setRoomName(e.target.value)} />
-                <Button text={"Criar sala"} onClick={() => createRoom()} />
+                <Button text={"Criar sala"} onClick={() => validateRoom()} />
             </div>
         </div>
     );

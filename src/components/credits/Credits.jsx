@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
-import styles from "./style.module.css"
+import styles from "./style.module.css";
 
 export default function Credits({ setModalIsVisible, modalIsVisible }) {
 

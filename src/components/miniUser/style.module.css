@@ -102,4 +102,31 @@
         font-family: 'Windlass';
         font-weight: 100;
     }
+
+
+    .miniUser_game {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        border-radius: 8px;
+        padding: 8px;
+        width: 100%;
+        background-color: #000000;
+    }
+
+    .userCredentials_game {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 50%;
+        gap: 4px;
+    }
+    
+    .info_game {
+        gap: 8px;
+        display: flex;
+        flex-direction: row;
+    }
 }

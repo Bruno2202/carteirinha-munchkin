@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import React, { cloneElement, useEffect, useState } from 'react'
+import { Link, useNavigate, } from 'react-router-dom';
 
 import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../../../config/firebaseConfig';
@@ -43,37 +43,57 @@ export default function JoinRoom() {
 
     useEffect(() => {
         if (roomId !== "") {
-            const getRoomData = async () => {
-                const data = await getDoc(doc(db, `room/${roomId}`));
-                setRoomData(data.data());
-            }
             getRoomData();
         }
     }, [roomId]);
 
     useEffect(() => {
-        if (inRoom) {
-            showPlayers();
-
-            const playersCollectionRef = collection(db, `room/${roomId}/jogadores`);
-            const updatePlayersOnRoom = onSnapshot(playersCollectionRef, () => {
-                showPlayers();
-            });
-            return () => {
-                updatePlayersOnRoom();
-            };
-        } else {
-            searchRooms();
-
-            const roomsCollectionRef = collection(db, `room`);
-            const updateRoomsAvailable = onSnapshot(roomsCollectionRef, () => {
-                searchRooms();
-            });
-            return () => {
-                updateRoomsAvailable();
-            };
+        if (roomData && roomData.jogando) {
+            navigate(`/game/${roomId}`);
+            if (!roomAdmin) {
+                toast.success("Jogo iniciado!")
+            }
         }
+    }, [roomData]);
+
+    useEffect(() => {
+        const updateRoom = async () => {
+            if (inRoom) {
+                showPlayers();
+
+                const roomsCollectionRef = doc(db, `room/${roomId}`);
+                const updateRoomData = onSnapshot(roomsCollectionRef, () => {
+                    getRoomData();
+                });
+
+                const playersCollectionRef = collection(db, `room/${roomId}/jogadores`);
+                const updatePlayersOnRoom = onSnapshot(playersCollectionRef, () => {
+                    showPlayers();
+                });
+                return () => {
+                    updatePlayersOnRoom();
+                    updateRoomData();
+                };
+            } else {
+                searchRooms();
+
+                const roomsCollectionRef = collection(db, `room`);
+                const updateRoomsAvailable = onSnapshot(roomsCollectionRef, () => {
+                    searchRooms();
+                });
+                return () => {
+                    updateRoomsAvailable();
+                };
+            }
+        }
+        updateRoom();
     }, [inRoom]);
+
+
+    async function getRoomData() {
+        const data = await getDoc(doc(db, `room/${roomId}`));
+        setRoomData(data.data());
+    }
 
     async function searchRooms() {
         const querySnapshot = await getDocs(collection(db, "room"));
@@ -85,13 +105,23 @@ export default function JoinRoom() {
         }
     }
 
-    async function setRoom(roomID) {
+    async function joinRoom(roomID, playing) {
         if (userData.admin_sala && roomID == userData.sala) {
             setRoomAdmin(true);
         }
         if (userData.admin_sala && roomID !== userData.sala) {
             toast.error("Você já possui uma sala");
+        } else if (userData.jogando == true) {
+            toast.error("Você está em uma partida");
+        } else if (playing) {
+            if (userData.sala == roomID) {
+                navigate(`/game/${roomID}`, { roomID: roomID });
+            } else {
+                toast.error("A partida já foi iniciada");
+            }
         } else {
+            navigate(`/room/${roomID}`);
+
             const roomDocRef = doc(db, `room/${roomID}`);
             const userDocRef = doc(db, `user/${myUid}`);
 
@@ -101,18 +131,21 @@ export default function JoinRoom() {
             if (userDataNow.data().sala !== roomID) {
                 await updateDoc(roomDocRef, { num_jogadores: roomQuerySnapshot.data().num_jogadores + 1 });
                 await updateDoc(userDocRef, { sala: roomID });
+
+
+                const playersDocRef = doc(db, `room/${roomID}/jogadores`, myUid);
+                const playerData = {
+                    uid: myUid,
+                    nome: userData.nome,
+                    picURL: userData.picURL,
+                    nivel: 1,
+                    equipamento: 0,
+                    modificador: 0,
+                    admin_sala: false
+                }
+                await setDoc(playersDocRef, playerData);
             }
 
-            const playersDocRef = doc(db, `room/${roomID}/jogadores`, myUid);
-            const playerData = {
-                uid: myUid,
-                nome: userData.nome,
-                picURL: userData.picURL,
-                nivel: 1,
-                equipamento: 0,
-                modificador: 0,
-            }
-            await setDoc(playersDocRef, playerData);
 
             setRoomId(roomID);
             setInRoom(!inRoom);
@@ -177,6 +210,38 @@ export default function JoinRoom() {
         setInRoom(!inRoom);
     }
 
+    function promiseStartGame(roomID) {
+        toast.promise(
+            startGame(roomID),
+            {
+                loading: 'Inciando jogo...',
+                success: <b>Jogo iniciado!</b>,
+                error: <b>Não foi possível iniciar jogo</b>,
+            }
+        );
+    }
+
+    async function startGame(roomID) {
+        try {
+            const roomDocRef = doc(db, `room/${roomID}`);
+            // await updateDoc(roomDocRef, { dt_fim: new Date });
+            await updateDoc(roomDocRef, { jogando: true });
+
+            const updatePlayersStatus = async () => {
+                const playersQuerySnapshoit = await getDocs(collection(db, `room/${roomID}/jogadores`));
+                var players = playersQuerySnapshoit.docs.map((doc) => doc.data().uid);
+                players.map(async (uid) => {
+                    const playerDocRef = doc(db, `user/${uid}`);
+                    // await updateDoc(playerDocRef, { jogando: true });
+                });
+                navigate(`/game/${roomID}`);
+            }
+            updatePlayersStatus();
+        } catch (error) {
+            console.log(`Erro ao iniciar jogo: ${error}`);
+        }
+    }
+
     return (
         <div className={styles.container}>
             {!inRoom ? (
@@ -187,14 +252,14 @@ export default function JoinRoom() {
                             <p className={styles.text}>Não há salas disponíveis no momento</p>
                         ) : (
                             data.map((room) => (
-                                <Link to={`/room/${room.roomID}`} key={room.roomID} onClick={() => setRoom(room.roomID)}>
+                                <div key={room.roomID} onClick={() => joinRoom(room.roomID, room.jogando)}>
                                     <MiniRoom
                                         roomName={room.nome}
                                         roomPic={room.roomPic}
                                     />
-                                </Link>
+                                </div>
                             )
-                        ))}
+                            ))}
                     </div>
                 </>
             ) : (
@@ -212,7 +277,7 @@ export default function JoinRoom() {
                         {roomAdmin && (
                             <div className={styles.options}>
                                 <Button text={"Excluir sala"} backgroundColor={"#B2283A"} color={"#FFFFFF"} onClick={() => deleteRoom(roomId)} />
-                                <Button text={"Iniciar partida"} backgroundColor={"#55DB5E"} color={"#FFFFFF"} onClick={() => toast.error("Ainda não é possível inciar partida")} />
+                                <Button text={"Iniciar partida"} backgroundColor={"#55DB5E"} color={"#FFFFFF"} onClick={() => promiseStartGame(roomId)} />
                             </div>
                         )}
                         <p className={styles.text}>Aguardando jogadores...</p>
@@ -221,7 +286,7 @@ export default function JoinRoom() {
                                 key={player.uid}
                                 name={player.nome}
                                 userPic={player.picURL}
-                                isLeaderboard={true}
+                                type={1}
                                 showLeaderPlace={false}
                                 showLeaderVictories={false}
                                 placeColor={"#44445B"}

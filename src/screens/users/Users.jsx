@@ -33,7 +33,7 @@ export default function Users() {
                 {data.map((user, index) => (
                     <MiniUser
                         key={user.nome}
-                        isLeaderboard={false}
+                        
                         placeColor={"#44445b"}
                         name={user.nome}
                         userPic={user.picURL}

@@ -14,6 +14,7 @@
     font-weight: 500;
 }
 
+
 .input2 {
     border-radius: 0px;
     width: 60%;
@@ -21,7 +22,7 @@
     background-color: transparent;
     border: none;
     outline: none;
-    border-bottom: 2px solid #FFFFFF;
+    border-bottom: 2px solid #ffffff77;
     color: #FFFFFF;
     cursor: pointer;
     font-size: 1.2rem;
