@@ -1,0 +1,49 @@
+.BattleCard {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    position: relative;
+    background-color: #0D1117;
+    padding: 12px;
+    border-radius: 8px;
+    width: 80%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.name {
+    width: 100%;
+    text-align: center;
+    color: #FFFFFF;
+    word-break: break-all;
+}
+
+.strength {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.text {
+    color: #FFFFFF;
+}
+
+.modifiableAttributes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.attributesText {
+    font-size: 2.5rem;
+    color: #C69749;
+}

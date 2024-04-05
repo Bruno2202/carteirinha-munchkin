@@ -107,6 +107,7 @@ export default function InGame() {
 							placeColor={"#44445B"}
 							type={3}
 							showLeaderPlace={false}
+							showStrength={true}
 							defeats={false}
 							level={player.nivel}
 							itens={player.equipamento}

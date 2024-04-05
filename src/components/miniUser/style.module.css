@@ -114,7 +114,6 @@
         width: 100%;
         background-color: #000000;
     }
-
     .userCredentials_game {
         display: flex;
         flex-direction: column;
@@ -123,7 +122,6 @@
         width: 50%;
         gap: 4px;
     }
-    
     .info_game {
         gap: 8px;
         display: flex;

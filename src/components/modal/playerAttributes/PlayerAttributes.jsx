@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { db } from '../../../config/firebaseConfig';
 
 import styles from "./style.module.css";
@@ -37,7 +38,7 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
 
     async function modifyLevel(modifier) {
         const playerDocRef = doc(db, `room/${roomID}/jogadores/${playerUid}`);
-        if (modifier == 1) {
+        if (modifier == 1 && playerData.nivel < 10) {
             await updateDoc(playerDocRef, { nivel: playerData.nivel + modifier });
             getPlayerData();
         }
@@ -51,6 +52,52 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
         const playerDocRef = doc(db, `room/${roomID}/jogadores/${playerUid}`);
         await updateDoc(playerDocRef, { equipamento: playerData.equipamento + modifier });
         getPlayerData();
+    }
+
+    function promiseStartBattle() {
+        toast.promise(
+            startBattle(),
+            {
+                loading: 'Iniciando batalha...',
+                success: <b>A batalha começou!</b>,
+                error: (error) => <b>{error.message}</b>
+            }
+        );
+    }
+
+    async function startBattle() {
+        const playersQuerySnapshot = await getDocs(
+            query(
+                collection(db, `room/${roomID}/jogadores`),
+                where("batalhando", "==", true)
+            )
+        );
+        const data = playersQuerySnapshot.docs.map((doc) => doc.data());
+        if (data.length >= 1 && playerData.batalhando == false) {
+            throw new Error("Um jogador já está batalhando");
+        } else if (data.length >= 1 && playerData.batalhando == true){
+            navigate(`/game/${roomID}/battle/${playerUid}`, { playerUid: playerUid });
+        } else {
+            try {
+                const playerDocref = doc(db, `room/${roomID}/jogadores/${playerUid}`);
+                if (playerData.batalhando == false) {
+                    const monsterCollection = collection(db, `room/${roomID}/jogadores/${playerUid}/monstro`);
+                    const monsterData = {
+                        id: "",
+                        nivel: 0,
+                        modificador: 0,
+                    }
+                    const monster = await addDoc(monsterCollection, monsterData);
+                    await updateDoc(doc(monsterCollection, monster.id), { id: monster.id });
+                    await updateDoc(playerDocref, { batalhando: true });
+                }
+
+                navigate(`/game/${roomID}/battle/${playerUid}`, { playerUid: playerUid });
+            } catch (error) {
+                console.log(`Erro ao iniciar sala: ${error}`);
+                throw new Error("Não foi possível iniciar batalha");
+            }
+        }
     }
 
     return (
@@ -86,7 +133,7 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
                                     width={"50%"}
                                     height={"auto"}
                                     borderRadius={"50px"}
-                                    onClick={() => navigate(`/game/${roomID}/battle/${playerUid}`, { playerUid: playerUid })}
+                                    onClick={() => promiseStartBattle()}
                                 />
                             )}
                         </div>

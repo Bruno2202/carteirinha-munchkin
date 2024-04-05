@@ -141,7 +141,8 @@ export default function JoinRoom() {
                     nivel: 1,
                     equipamento: 0,
                     modificador: 0,
-                    admin_sala: false
+                    admin_sala: false,
+                    batalhando: false
                 }
                 await setDoc(playersDocRef, playerData);
             }

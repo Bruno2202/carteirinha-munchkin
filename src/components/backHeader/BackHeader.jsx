@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import styles from "./style.module.css";
 
-export default function BackHeader({ title, backgroundColor, to, onClick, children }) {
+export default function BackHeader({ title, backgroundColor, to, onClick, children, onClickChildren }) {
     return (
         <div className={styles.header} style={{ backgroundColor: backgroundColor }}>
             <Link className={styles.a} to={to ? to : "/profile"} onClick={onClick && onClick}>
@@ -12,7 +12,7 @@ export default function BackHeader({ title, backgroundColor, to, onClick, childr
                 </svg>
             </Link>
             <p className={styles.title}>{title}</p>
-            <div className={styles.children}>
+            <div className={styles.children} onClick={onClickChildren}>
                 {children}
             </div>
         </div >

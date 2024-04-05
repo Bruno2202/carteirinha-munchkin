@@ -95,7 +95,8 @@ export default function CreateRoom() {
                     nivel: 1,
                     equipamento: 0,
                     modificador: 0,
-                    admin_sala: true
+                    admin_sala: true,
+                    batalhando: false
                 }
 
                 await setDoc(parentDocRef, playerData);
