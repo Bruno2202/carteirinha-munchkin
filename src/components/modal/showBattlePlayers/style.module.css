@@ -1,0 +1,37 @@
+.modalOverlay {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0000,0,0,0.3);
+    width: 100vw;
+    height: 100vh;
+    z-index: 2;
+}
+
+.players {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    position: relative;
+    border-width: 8px;
+    border-radius: 8px;
+    padding: 40px 40px;
+    gap: 12px;
+    background-color: #0D1117;
+    display: flex;
+    flex-direction: column;
+    height: 50%;
+    width: 92%;
+    overflow-y: auto;
+}
+
+
+.close {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+}

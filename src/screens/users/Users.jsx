@@ -30,10 +30,9 @@ export default function Users() {
         <div className={styles.container}>
             <BackHeader title={"MUNCHKERS"} backgroundColor={"#0D1117"}/>
             <div className={styles.userList}>
-                {data.map((user, index) => (
+                {data.map((user) => (
                     <MiniUser
                         key={user.nome}
-                        
                         placeColor={"#44445b"}
                         name={user.nome}
                         userPic={user.picURL}

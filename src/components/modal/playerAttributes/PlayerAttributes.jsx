@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { db } from '../../../config/firebaseConfig';
 
 import styles from "./style.module.css";
 import ChangeAttributes from './changeAttributes/ChangeAttributes';
 import Button from '../../button/Button';
 
-export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, playerUid, roomID }) {
+export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, playerUid, roomID, battleUid }) {
 
     const [playerData, setPlayerData] = useState("");
 
@@ -18,9 +18,18 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
     useEffect(() => {
         if (playerUid !== "") {
             getPlayerData();
-        }
-    }, [playerUid]);
 
+            const playerCollection = collection(db, `room/${roomID}/jogadores`);
+            const refreshPlayerData = onSnapshot(playerCollection, () => {
+                getPlayerData();
+            });
+    
+            return () => {
+                refreshPlayerData();
+            };
+        }
+
+    }, [playerUid]);
 
     const getPlayerData = async () => {
         try {
@@ -73,13 +82,26 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
             )
         );
         const data = playersQuerySnapshot.docs.map((doc) => doc.data());
+        // console.log(data.length >= 1, playerData.uid !== battleUid, playerData.batalhando)
         if (data.length >= 1 && playerData.batalhando == false) {
+            // Tem um jogador batalhando
             throw new Error("Um jogador já está batalhando");
-        } else if (data.length >= 1 && playerData.batalhando == true){
+        } else if (data.length >= 1 && playerData.uid !== battleUid) {
+            if (playerData.batalhando) {
+                throw new Error("Você está batalhando junto com um jogador");
+            } else {
+                throw new Error("Um jogador já está batalhando");
+            }
+        } else if (data.length >= 1 && playerData.uid !== battleUid && playerData.batalhando) {
+            // Tem um jogador batalhando e você está ajudando ele
+            throw new Error("Você está batalhando junto com um jogador");
+        } else if (data.length >= 1 && playerData.batalhando == true) {
+            // Tem um jogador batalhando, porém a sala é dele
             navigate(`/game/${roomID}/battle/${playerUid}`, { playerUid: playerUid });
         } else {
             try {
                 const playerDocref = doc(db, `room/${roomID}/jogadores/${playerUid}`);
+                const roomDocRef = doc(db, `room/${roomID}`)
                 if (playerData.batalhando == false) {
                     const monsterCollection = collection(db, `room/${roomID}/jogadores/${playerUid}/monstro`);
                     const monsterData = {
@@ -90,6 +112,7 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
                     const monster = await addDoc(monsterCollection, monsterData);
                     await updateDoc(doc(monsterCollection, monster.id), { id: monster.id });
                     await updateDoc(playerDocref, { batalhando: true });
+                    await updateDoc(roomDocRef, { uid_batalha: playerUid });
                 }
 
                 navigate(`/game/${roomID}/battle/${playerUid}`, { playerUid: playerUid });

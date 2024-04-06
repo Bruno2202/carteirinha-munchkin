@@ -111,8 +111,8 @@ export default function JoinRoom() {
         }
         if (userData.admin_sala && roomID !== userData.sala) {
             toast.error("Você já possui uma sala");
-        } else if (userData.jogando == true) {
-            toast.error("Você está em uma partida");
+        } else if (userData.jogando == true && roomID !== userData.sala) {
+            toast.error("Você já está no meio de outra partida");
         } else if (playing) {
             if (userData.sala == roomID) {
                 navigate(`/game/${roomID}`, { roomID: roomID });
@@ -225,7 +225,7 @@ export default function JoinRoom() {
     async function startGame(roomID) {
         try {
             const roomDocRef = doc(db, `room/${roomID}`);
-            // await updateDoc(roomDocRef, { dt_fim: new Date });
+            await updateDoc(roomDocRef, { dt_inicio: new Date });
             await updateDoc(roomDocRef, { jogando: true });
 
             const updatePlayersStatus = async () => {
@@ -233,7 +233,7 @@ export default function JoinRoom() {
                 var players = playersQuerySnapshoit.docs.map((doc) => doc.data().uid);
                 players.map(async (uid) => {
                     const playerDocRef = doc(db, `user/${uid}`);
-                    // await updateDoc(playerDocRef, { jogando: true });
+                    await updateDoc(playerDocRef, { jogando: true });
                 });
                 navigate(`/game/${roomID}`);
             }

@@ -72,7 +72,9 @@ export default function CreateRoom() {
             dt_fim: null,
             num_jogadores: 1,
             roomPic: userData.picURL ? userData.picURL : require('../../../../assets/img/userPic.png'),
-            jogando: false
+            jogando: false,
+            uid_batalha: "",
+            uid_ganhador: ""
         }
 
         try {
