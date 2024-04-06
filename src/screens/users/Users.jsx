@@ -40,6 +40,7 @@ export default function Users() {
                         defeats={user.derrotas}
                         // favoriteCard={user.carta_favorita}
                         rating={`${user.rating}%`}
+                        type={2}
                     />
                 ))}
             </div>

@@ -217,29 +217,36 @@ export default function JoinRoom() {
             {
                 loading: 'Inciando jogo...',
                 success: <b>Jogo iniciado!</b>,
-                error: <b>Não foi possível iniciar jogo</b>,
+                error: (error) => <b>{error.message}</b>,
             }
         );
     }
 
     async function startGame(roomID) {
-        try {
-            const roomDocRef = doc(db, `room/${roomID}`);
-            await updateDoc(roomDocRef, { dt_inicio: new Date });
-            await updateDoc(roomDocRef, { jogando: true });
+        const roomDocRef = doc(db, `room/${roomID}`);
+        const roomSnapshot = await getDoc(roomDocRef);
+        
+        if (roomSnapshot.data().num_jogadores > 1) {
+            try {
+                await updateDoc(roomDocRef, { dt_inicio: new Date });
+                await updateDoc(roomDocRef, { jogando: true });
 
-            const updatePlayersStatus = async () => {
-                const playersQuerySnapshoit = await getDocs(collection(db, `room/${roomID}/jogadores`));
-                var players = playersQuerySnapshoit.docs.map((doc) => doc.data().uid);
-                players.map(async (uid) => {
-                    const playerDocRef = doc(db, `user/${uid}`);
-                    await updateDoc(playerDocRef, { jogando: true });
-                });
-                navigate(`/game/${roomID}`);
+                const updatePlayersStatus = async () => {
+                    const playersQuerySnapshoit = await getDocs(collection(db, `room/${roomID}/jogadores`));
+                    var players = playersQuerySnapshoit.docs.map((doc) => doc.data().uid);
+                    players.map(async (uid) => {
+                        const playerDocRef = doc(db, `user/${uid}`);
+                        await updateDoc(playerDocRef, { jogando: true });
+                    });
+                    navigate(`/game/${roomID}`);
+                }
+                updatePlayersStatus();
+            } catch (error) {
+                console.log(`Erro ao iniciar jogo: ${error}`);
+                throw new Error("Não foi possível iniciar o jogo");
             }
-            updatePlayersStatus();
-        } catch (error) {
-            console.log(`Erro ao iniciar jogo: ${error}`);
+        } else {
+            throw new Error("Há apenas um jogado na sala");
         }
     }
 
