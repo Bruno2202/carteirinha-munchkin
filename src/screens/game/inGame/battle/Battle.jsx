@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 import { db } from '../../../../config/firebaseConfig';
-import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 
 import styles from "./style.module.css";
 import BackHeader from '../../../../components/backHeader/BackHeader';
@@ -154,12 +154,12 @@ export default function Battle() {
                 await deleteDoc(monsterDocRef);
             })
             playerData.map(async (player) => {
-                const playerDocRef = doc(db, `room/${roomID}/jogadores/${playerUid}`);
-                updateDoc(playerDocRef, { batalhando: false });
+                const playerDocRef = doc(db, `room/${roomID}/jogadores/${player.uid}`);
+                await updateDoc(playerDocRef, { batalhando: false });
             })
 
             const roomDocRef = doc(db, `room/${roomID}`);
-            updateDoc(roomDocRef, { uid_batalha: "" });
+            await updateDoc(roomDocRef, { uid_batalha: "" });
 
             navigate(`/game/${roomID}`);
         } catch (error) {

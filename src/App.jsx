@@ -34,7 +34,7 @@ export default function App() {
 					<Route path="/room/:roomID" element={<JoinRoom />} />
 					<Route path="/room/create" element={<CreateRoom />} />
 					<Route path="/room/join" element={<JoinRoom />} />
-					<Route path="/game/:roomID" element={<InGame />}/>
+					<Route path="/game/:roomID" element={<InGame />} />
 					<Route path="/game/:roomID/battle/:playerUid" element={<Battle />} />
 				</Routes>
 			</Router>

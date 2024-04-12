@@ -82,7 +82,6 @@ export default function PlayerAttributes({ modalIsVisible, setModalIsVisible, pl
             )
         );
         const data = playersQuerySnapshot.docs.map((doc) => doc.data());
-        // console.log(data.length >= 1, playerData.uid !== battleUid, playerData.batalhando)
         if (data.length >= 1 && playerData.batalhando == false) {
             // Tem um jogador batalhando
             throw new Error("Um jogador já está batalhando");

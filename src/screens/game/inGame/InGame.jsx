@@ -30,6 +30,20 @@ export default function InGame() {
 	}, []);
 
 	useEffect(() => {
+		if (myUid !== "") {
+			getMyData();
+
+			const myPlayerDoc = doc(db, `room/${roomID}/jogadores/${myUid}`);
+			const refreshMyPlayerData = onSnapshot(myPlayerDoc, () => {
+				getMyData();
+			});
+			return () => {
+				refreshMyPlayerData();
+			};
+		}
+	}, [myUid]);
+
+	useEffect(() => {
 		const playersCollection = collection(db, `room/${roomID}/jogadores`);
 		const refreshPlayerData = onSnapshot(playersCollection, () => {
 			getPlayers();
@@ -38,7 +52,6 @@ export default function InGame() {
 			refreshPlayerData();
 		};
 	}, [myUid]);
-
 
 	useEffect(() => {
 		const roomDocRef = doc(db, `room/${roomID}`);
@@ -53,27 +66,21 @@ export default function InGame() {
 		return () => refreshRoomData();
 	}, [roomID]);
 
-
-	useEffect(() => {
-		if (myUid !== "") {
-			const getMyData = async () => {
-				try {
-					const data = await getDoc(doc(db, `room/${roomID}/jogadores/${myUid}`));
-					setMyData(data.data());
-				} catch (error) {
-					console.log(`Não possível obter seus dados de usuário: ${error}`);
-				}
-			}
-			getMyData();
-		}
-	}, [myUid]);
-
 	useEffect(() => {
 		if (roomID !== null || roomID !== undefined || roomID !== "") {
 			getRoomData();
 			getPlayers();
 		}
 	}, [roomID]);
+
+	async function getMyData() {
+		try {
+			const data = await getDoc(doc(db, `room/${roomID}/jogadores/${myUid}`));
+			setMyData(data.data());
+		} catch (error) {
+			console.log(`Não possível obter seus dados de usuário: ${error}`);
+		}
+	}
 
 	async function getRoomData() {
 		try {
@@ -108,8 +115,10 @@ export default function InGame() {
 		if (myData.admin_sala || myData.uid == uid) {
 			setModalIsVisible(true);
 			setPlayerUid(uid);
+		} else if (myData.batalhando) {
+			navigate(`/game/${roomID}/battle/${roomData.uid_batalha}`)
 		} else {
-			toast.error("Apenas o administrador da sala pode alterar os dados dos outros usuários")
+			toast.error("Apenas o administrador da sala pode alterar os dados dos outros usuários");
 		}
 	}
 
